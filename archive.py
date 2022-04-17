@@ -1,35 +1,40 @@
+from selenium import webdriver 
+from selenium.webdriver.chrome.options import Options
+import chromedriver_autoinstaller
 import pandas as pd
-import requests
-from bs4 import BeautifulSoup
 import json
+from bs4 import BeautifulSoup
 import time
-df=pd.DataFrame()
+chromedriver_autoinstaller.install()
+chrome_options = Options()
+chrome_options.add_argument("--headless")
+driver = webdriver.Chrome(options=chrome_options)
+textfile = open("a_file.txt", "r")
+p=textfile.readlines()
 data={}
 ix=0
 tp=100
-textfile = open("a_file.txt", "r")
-p=textfile.readlines()
+df=pd.DataFrame()
 for ps in p:
-    response=requests.get(ps.replace("\n",""))
-    soup=BeautifulSoup(response.content,"html.parser")
+    driver.get(ps.replace('\n',''))
     songs=[]
+    ix=ix+1
     #getting text
-    title=soup.find("h1",class_="sr-only")
-    title=title.get_text().replace('\n    ','')
+    title=driver.find_element_by_xpath("//span[@itemprop='name']").text
     t=title
     t=t.replace('?','').replace('\\','').replace('*','').replace('/','').replace('<','').replace('>','').replace('|>','').replace("\n",'')
     #getting name of songs
-    name_of_songs=soup.find_all("meta",itemprop="name")
+    name_of_songs=driver.find_elements_by_xpath("//span[@class='ttl']")
     i=0
     songs=[]
     for song in name_of_songs:
         i=i+1
-        sin=song["content"]
-        sin = sin.replace(' ->', '')
+        sin=song.text
         songs.append(sin)
     #getting links
     d=[]
     final_list=[]
+    soup=BeautifulSoup(driver.page_source)
     linksy=soup.find_all("link",itemprop="associatedMedia")
     for linkst in linksy:
         d.append(linkst["href"])
@@ -38,20 +43,18 @@ for ps in p:
         if "mp3" in d[r]:
             final_list.append(d[r])
     final_list=sorted(final_list)
-    data={"title": title ,"link of concert":ps,"songs":songs,"link_of_songs":final_list}
+    timee=[]
+    runtimes=driver.find_elements_by_xpath("//span[@class='tm']")
+    for runtime in runtimes:
+        timee.append(runtime.text)
+    data={"title": title ,"link of concert":ps,"songs":songs,"runtime":timee,"link_of_songs":final_list}
     df=df.append(data,ignore_index=True)
     dfj=json.loads(df.to_json(orient="table",index=False))
     json_object=json.dumps(dfj,indent =4)
-    try:
-        with open(f"{t}.json", 'w', encoding='utf-8') as f:
-            json.dump(data, f, ensure_ascii=False, indent=4)
-    except:
-        with open(f"title_missnaming.json", 'w', encoding='utf-8') as f:
-            json.dump(data, f, ensure_ascii=False, indent=4)
+    with open(f"New folder/{t}({ix}).json", 'w', encoding='utf-8') as f:
+        json.dump(data, f, ensure_ascii=False, indent=4)
+    df=pd.DataFrame()
     time.sleep(1)
-    ix=ix+1
     if ix==tp:
-        tp=tp+100
+        tp=tp+1000
         print(f"{ix} link is done")
-    
-        
