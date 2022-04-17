@@ -34,7 +34,7 @@ for ps in p:
     #getting links
     d=[]
     final_list=[]
-    soup=BeautifulSoup(driver.page_source)
+    soup=BeautifulSoup(driver.page_source,"lxml")
     linksy=soup.find_all("link",itemprop="associatedMedia")
     for linkst in linksy:
         d.append(linkst["href"])
