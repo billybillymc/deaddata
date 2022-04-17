@@ -11,6 +11,10 @@ chrome_options.add_argument("--headless")
 driver = webdriver.Chrome(options=chrome_options)
 textfile = open("a_file.txt", "r")
 p=textfile.readlines()
+deleting=input("do you want to delete (y/n)")
+if deleting == "y":
+    number_del=input("enter the number)
+    del p[:int(number_del)]  
 data={}
 ix=0
 tp=0
