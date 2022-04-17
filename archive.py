@@ -13,14 +13,19 @@ textfile = open("a_file.txt", "r")
 p=textfile.readlines()
 data={}
 ix=0
-tp=100
+tp=0
 df=pd.DataFrame()
 for ps in p:
     driver.get(ps.replace('\n',''))
     songs=[]
     ix=ix+1
     #getting text
-    title=driver.find_element_by_xpath("//span[@itemprop='name']").text
+    soup=BeautifulSoup(driver.page_source,"lxml")
+    try:
+        title=driver.find_element_by_xpath("//span[@itemprop='name']").text
+    except:
+        title=soup.find("h1",class_="sr-only")
+        tilte=title.replace('\n    ','')
     t=title
     t=t.replace('?','').replace('\\','').replace('*','').replace('/','').replace('<','').replace('>','').replace('|>','').replace("\n",'')
     #getting name of songs
@@ -34,7 +39,6 @@ for ps in p:
     #getting links
     d=[]
     final_list=[]
-    soup=BeautifulSoup(driver.page_source,"lxml")
     linksy=soup.find_all("link",itemprop="associatedMedia")
     for linkst in linksy:
         d.append(linkst["href"])
