@@ -4,3 +4,6 @@ requests
 pandas
 json
 time
+chromedriver_autoinstaller
+selenium
+
